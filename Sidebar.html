@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <h1>Hello World</h1>
+    <a href="https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com" target="_blank"><button>Show the calendar</button></a>
+    <button>Publish New Events</button>
+    <button onclick='refreshEvents()'>Retrieve New Events</button>
+  </body>
+</html>
+
+<script>
+  function refreshEvents() {
+      google.script.run.refreshEvents();
+  }
+</script>
+
+
