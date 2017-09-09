@@ -1,3 +1,5 @@
+
+/************************STANDARD STUFF********************************/
 function onOpen(e) {
   SpreadsheetApp.getUi().createAddonMenu()
       .addItem('Start', 'showSidebar')
@@ -18,7 +20,7 @@ function showSidebar() {
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 
-/****GLOBAL STUFF****/
+/*************************GLOBAL STUFF*********************************/
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 var sheet = ss.getSheetByName('Events');
 var daubeCommCal = getCalendar();
@@ -26,8 +28,9 @@ var daubeCommCal = getCalendar();
 
 
 
-/****GET CALENDAR EVENTS FROM GOOGLE****/
+/*******************GET CALENDAR EVENTS FROM GOOGLE********************/
 
+//gets calendar events for the next year and inserts new ones in the sheet
 function refreshEvents() {
   var events = getEventsFromGoogle();
   var eventsFormatted = getCalendarEventDetails(events);
@@ -36,6 +39,7 @@ function refreshEvents() {
   putNewEventsOnSheet(eventsFormattedAndNew);
 }
 
+//get calendar events for today plus one year
 function getEventsFromGoogle() {
   var now = new Date();
   var then = new Date(now.getTime() + (3.154e+10));
@@ -45,6 +49,7 @@ function getEventsFromGoogle() {
   return events;
 }
 
+//parse events into the desired fields
 function getCalendarEventDetails(events) {
   var eventsFormatted = [];
   for (var i=0;i<events.length;i++) {
@@ -66,6 +71,17 @@ function getCalendarEventDetails(events) {
   return eventsFormatted;
 }
 
+//get all existing event ids from the sheet
+function getEventIdsFromSheet() {
+  
+  var lastRow = sheet.getLastRow();
+  var sheetEvents = sheet.getRange(2, 1, lastRow, 1);
+  var EventIds = sheetEvents.getValues();
+  Logger.log('Event Ids: ' + EventIds);
+  return EventIds
+}
+
+//filter events to just new events
 function filterNewEvents(eN) {
   var newEvents = [];
   var EvIds = getEventIdsFromSheet();
@@ -82,30 +98,8 @@ function filterNewEvents(eN) {
   }
   return newEvents;
 }
-  
-function tester() {
 
-  var teststring = 'A,B,C';
-
-  var y = teststring.indexOf("C");
-  var n = teststring.indexOf("P");
-  Logger.log('yes ' + y);
-  Logger.log('no ' + n);
-
-}
-  
-
-
-function getEventIdsFromSheet() {
-  
-  var lastRow = sheet.getLastRow();
-  var sheetEvents = sheet.getRange(2, 1, lastRow, 1);
-  var EventIds = sheetEvents.getValues();
-  Logger.log('Event Ids: ' + EventIds);
-  return EventIds
-}
-/**** PUBLISH SHEETS EVENTS TO GOOGLE CALENDAR ****/
-
+// append the new events to the sheet
 function putNewEventsOnSheet(eF) {
   for (var i=0;i<eF.length;i++) {
   sheet.appendRow([
@@ -119,16 +113,72 @@ function putNewEventsOnSheet(eF) {
   }
 }
 
+/**** PUBLISH SHEETS EVENTS TO GOOGLE CALENDAR ****/
 
 function publishNewEvents() {
-  var event = getCalendar().createEvent('Test Push to Gcal',
-                                        new Date('September 15, 2017 12:00:00 UTC'),
-                                        new Date('September 15, 2017 13:00:00 UTC'),
-                                        {location: 'The Moon',
-                                        desription: 'Some other stuff'});
-  Logger.log('Event ID: ' + event.getId());
-                                                                                                                         
+  var data = getEventsFromSheet();
+  var eventsToPublish = filterNonPublishedEvents(data);
+  Logger.log('event count ' + eventsToPublish.length);
+  for (i=0; i<eventsToPublish.length; i++) {
+    var event = createEventOnCalendar(eventsToPublish[i]);
+    var id = event.getId();
+    var name = event.getTitle();
+    var row = eventsToPublish[i].rowNum;
+    var idCell = sheet.getRange('A' + row);
+    idCell.setValue(id);
+    var status = sheet.getRange('D' + row);
+    status.setValue('Published');
+    
+    Logger.log('id ' + id + '  name ' + name + '  row ' + row);
+    
+  }
 }
+
+function getEventsFromSheet() {
+  var lastRow = sheet.getLastRow() - 1;
+  
+  var sheetEvents = sheet.getRange(2, 1, lastRow, 6);
+  var data = sheetEvents.getValues();
+  return data;
+}
+
+function filterNonPublishedEvents(data) {
+  var eventsToPublish = [];
+  var lastRow = sheet.getLastRow() - 1;
+  for (var i=0; i<lastRow; i++) {
+    var status = data[i][3];
+    if (status === 'Published') { continue; };
+    
+    var eventToPub = {}
+    var id = data[i][0];
+    var startDate = data[i][1];
+    var endDate = data[i][2];
+    var topic = data[i][4];
+    var details = data[i][5];
+    var rowNum = i + 2;
+    eventToPub = {
+      "id": id,
+      "startDate": startDate,
+      "endDate": endDate,
+      "topic": topic,
+      "details": details,
+      "rowNum": rowNum
+    };
+    eventsToPublish.push(eventToPub);
+  }
+  return eventsToPublish;  
+}
+  
+function createEventOnCalendar(ev) {
+  var event = getCalendar().createEvent(
+    ev.topic,
+    new Date(ev.startDate),
+    new Date(ev.endDate),
+    {description: ev.details}
+  );   
+  return event;                                                                                                                     
+}
+
 /**********************/
 /** Helper Functions **/
 
