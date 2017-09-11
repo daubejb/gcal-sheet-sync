@@ -1,24 +1,111 @@
 <!DOCTYPE html>
 <html>
+
   <head>
     <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <style>
+    
+      .branding.below {
+        bottom: 56px;
+        top: 0;
+      }
+      
+      hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
+    
+    </style>
   </head>
+  
   <body>
-    <h1>Hello World</h1>
-    <a href="https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com" target="_blank"><button>Show the calendar</button></a>
-    <button onclick='publishNewEvents()'>Publish New Events</button>
-    <button onclick='refreshEvents()'>Retrieve New Events</button>
+    <div class="sidebar branding-below">
+    
+      <h4>Calendar name</h4>
+      <p>Daube Communications</p>
+      <hr>
+      <h4>Calendar view options</h4>
+      <div class="inline form-group">
+        
+        <label unselectable="on"><input type="radio" id="radioToday" name="calendarViewType" value="Today" />Today<br></label>
+        <label unselectable="on"><input type="radio" id="radioMonth" name="calendarViewType" value="Month" checked />This Month<br></label>
+        <label unselectable="on"><input type="radio" id="radioWeek" name="calendarViewType" value="This week" />This week<br></label>
+        <label unselectable="on"><input type="radio" id="radioSpecific" name="calendarViewType" value="Specific week" /><span>Specific week:    </span><input type="date" id="date" /></label>
+        <br>
+        <br>
+        <input type="button" class="blue" onclick='openCalendar(radioToday.checked, radioMonth.checked, radioWeek.checked, radioSpecific.checked, date.value)' value="Open calendar" />
+        <br>
+      
+      </div>
+      
+      <hr>
+      <h4>Publish new events to google</h4>
+      <input type="button" class="blue" onclick='publishNewEvents()' value="Publish">
+      <br>
+      <hr>
+      <h4>Retrieve new events from google</h4>
+      <input type="button" class="blue" onclick='refreshEvents()' value="Retrieve">
+      <br>
+      <hr>
+      <h4>Delete an event</hr>
+      
+    </div>
+    
+    <div class="sidebar bottom">
+      <span>Communications Calendar by <span color="#0f9d58 !important">daube</span>design</span>
+    </div>
+    
+    <script>
+
+      function openCalendar(radioToday, radioMonth, radioWeek, radioSpecific, dateValue) {
+        try {
+          if (radioToday) {
+            var today = getFormattedDateToday();
+            window.open("https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com&mode=day&dates=" + today + "%2F" + today);
+          }
+          if (radioMonth) {
+            window.open("https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com", "_blank");
+          }
+          if (radioWeek) {
+            var today = getFormattedDateToday();
+            window.open("https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com&mode=week&dates=" + today + "%2F" + today);
+          }
+          if (radioSpecific) {
+            var today = getFormattedDateToday();
+            window.open("https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com&mode=week&dates=" + today + "%2F" + today);
+          }
+        } catch (err) {
+          google.script.run.displayToast("To display the week, select a date first.");
+        }
+      }
+      
+      function getFormattedDateToday() {
+        (new Date()).toISOString().slice(0,10).replace(/-/g,"");
+      }
+
+      function refreshEvents() {
+        try {
+          google.script.run.refreshEvents();
+        } catch (err) {
+          google.script.run.displayToast(err);
+        }
+      }
+  
+      function publishNewEvents() {
+        try {
+          google.script.run.publishNewEvents();  
+        } catch (err) {
+          google.script.run.displayToast(err);
+        }
+      }
+    </script>
+    
   </body>
+
 </html>
 
-<script>
-  function refreshEvents() {
-    google.script.run.refreshEvents();
-  }
-  
-  function publishNewEvents() {
-    google.script.run.publishNewEvents();  
-  }
-</script>
+
+
 
 
