@@ -1,9 +1,14 @@
+/*************************GLOBAL STUFF*********************************/
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+var sheet = ss.getSheetByName('Events');
+var daubeCommCal = getCalendar();
 
-/************************STANDARD STUFF********************************/
+/*************************SETUP STUFF**********************************/
 function onOpen(e) {
   SpreadsheetApp.getUi().createAddonMenu()
       .addItem('Start', 'showSidebar')
       .addToUi();
+      showSidebar();
 }
 
 function onInstall(e) {
@@ -19,14 +24,6 @@ function showSidebar() {
       .setTitle('Daube Communications Synchronization');
   SpreadsheetApp.getUi().showSidebar(ui);
 }
-
-/*************************GLOBAL STUFF*********************************/
-var ss = SpreadsheetApp.getActiveSpreadsheet();
-var sheet = ss.getSheetByName('Events');
-var daubeCommCal = getCalendar();
-
-
-
 
 /*******************GET CALENDAR EVENTS FROM GOOGLE********************/
 
@@ -55,13 +52,11 @@ function getCalendarEventDetails(events) {
   for (var i=0;i<events.length;i++) {
     var eventFormatted = {};
     var startTime = events[i].getStartTime();
-    var endTime = events[i].getEndTime();
     var description = events[i].getDescription();
     var title = events[i].getTitle();
     var id = events[i].getId();
     eventFormatted = {
       "startTime": startTime,
-      "endTime": endTime,
       "title": title,
       "description": description,
       "id": id
@@ -105,7 +100,6 @@ function putNewEventsOnSheet(eF) {
   sheet.appendRow([
     eF[i].id,
     eF[i].startTime,
-    eF[i].endTime,
     "Published",
     eF[i].title,
     eF[i].description
@@ -126,7 +120,7 @@ function publishNewEvents() {
     var row = eventsToPublish[i].rowNum;
     var idCell = sheet.getRange('A' + row);
     idCell.setValue(id);
-    var status = sheet.getRange('D' + row);
+    var status = sheet.getRange('C' + row);
     status.setValue('Published');
     
     Logger.log('id ' + id + '  name ' + name + '  row ' + row);
@@ -137,7 +131,7 @@ function publishNewEvents() {
 function getEventsFromSheet() {
   var lastRow = sheet.getLastRow() - 1;
   
-  var sheetEvents = sheet.getRange(2, 1, lastRow, 6);
+  var sheetEvents = sheet.getRange(2, 1, lastRow, 5);
   var data = sheetEvents.getValues();
   return data;
 }
@@ -146,20 +140,18 @@ function filterNonPublishedEvents(data) {
   var eventsToPublish = [];
   var lastRow = sheet.getLastRow() - 1;
   for (var i=0; i<lastRow; i++) {
-    var status = data[i][3];
+    var status = data[i][2];
     if (status === 'Published') { continue; };
     
     var eventToPub = {}
     var id = data[i][0];
     var startDate = data[i][1];
-    var endDate = data[i][2];
-    var topic = data[i][4];
-    var details = data[i][5];
+    var topic = data[i][3];
+    var details = data[i][4];
     var rowNum = i + 2;
     eventToPub = {
       "id": id,
       "startDate": startDate,
-      "endDate": endDate,
       "topic": topic,
       "details": details,
       "rowNum": rowNum
@@ -173,7 +165,7 @@ function createEventOnCalendar(ev) {
   var event = getCalendar().createEvent(
     ev.topic,
     new Date(ev.startDate),
-    new Date(ev.endDate),
+    new Date(ev.startDate),
     {description: ev.details}
   );   
   return event;                                                                                                                     
@@ -183,12 +175,16 @@ function createEventOnCalendar(ev) {
 /** Helper Functions **/
 
 function getCalendar() {
-  return CalendarApp.getCalendarById('redhat.com_rcl08qun4gu0gdj9ac1mr1pni4@group.calendar.google.com');
+  return CalendarApp.getCalendarById(
+    'redhat.com_rcl08qun4gu0gdj9ac1mr1pni4@group.calendar.google.com');
 }
 
+function displayToast(m) {
+  ss.toast("An error occured:" + m);
+}
 
 // Helper function that puts external JS / CSS into the HTML file.
-function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename)
-      .getContent();
-}
+//function include(filename) {
+//  return HtmlService.createHtmlOutputFromFile(filename)
+//      .getContent();
+//}
