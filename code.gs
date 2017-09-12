@@ -32,7 +32,6 @@ function refreshEvents() {
   var events = getEventsFromGoogle();
   var eventsFormatted = getCalendarEventDetails(events);
   var eventsFormattedAndNew = filterNewEvents(eventsFormatted);
-  Logger.log(eventsFormattedAndNew);
   putNewEventsOnSheet(eventsFormattedAndNew);
 }
 
@@ -72,7 +71,6 @@ function getEventIdsFromSheet() {
   var lastRow = sheet.getLastRow();
   var sheetEvents = sheet.getRange(2, 1, lastRow, 1);
   var EventIds = sheetEvents.getValues();
-  Logger.log('Event Ids: ' + EventIds);
   return EventIds
 }
 
@@ -81,10 +79,8 @@ function filterNewEvents(eN) {
   var newEvents = [];
   var EvIds = getEventIdsFromSheet();
   var stringIds = EvIds.toString();
-  Logger.log(stringIds);
   for (var i=0;i<eN.length;i++) {
     var con = stringIds.indexOf(eN[i].id) 
-    Logger.log(con);
     if (con == -1) {
       newEvents.push(eN[i]);
     } else {
@@ -112,7 +108,6 @@ function putNewEventsOnSheet(eF) {
 function publishNewEvents() {
   var data = getEventsFromSheet();
   var eventsToPublish = filterNonPublishedEvents(data);
-  Logger.log('event count ' + eventsToPublish.length);
   for (i=0; i<eventsToPublish.length; i++) {
     var event = createEventOnCalendar(eventsToPublish[i]);
     var id = event.getId();
@@ -171,6 +166,18 @@ function createEventOnCalendar(ev) {
   return event;                                                                                                                     
 }
 
+/**** DELETE EVENT FROM CALENDAR AND SHEET ****/
+
+function deleteEvent(delRowNum) {
+  var deleteId = sheet.getRange(delRowNum, 1).getValue();
+  Logger.log('row number: ' + delRowNum + 'id: ' + deleteId);
+  var cal = getCalendar();
+  var event = cal.getEventSeriesById(deleteId);
+  event.deleteEventSeries();
+  
+}
+
+
 /**********************/
 /** Helper Functions **/
 
@@ -182,9 +189,3 @@ function getCalendar() {
 function displayToast(m) {
   ss.toast("An error occured:" + m);
 }
-
-// Helper function that puts external JS / CSS into the HTML file.
-//function include(filename) {
-//  return HtmlService.createHtmlOutputFromFile(filename)
-//      .getContent();
-//}
