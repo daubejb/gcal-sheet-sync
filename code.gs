@@ -2,6 +2,7 @@
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 var sheet = ss.getSheetByName('Events');
 var daubeCommCal = getCalendar();
+var filterSheet = ss.getSheetByName('Filter');
 
 /*************************SETUP STUFF**********************************/
 function onOpen(e) {
@@ -111,16 +112,38 @@ function publishNewEvents() {
   for (i=0; i<eventsToPublish.length; i++) {
     var event = createEventOnCalendar(eventsToPublish[i]);
     var id = event.getId();
-    var name = event.getTitle();
+//    var name = event.getTitle();
     var row = eventsToPublish[i].rowNum;
     var idCell = sheet.getRange('A' + row);
     idCell.setValue(id);
     var status = sheet.getRange('C' + row);
     status.setValue('Published');
     
-    Logger.log('id ' + id + '  name ' + name + '  row ' + row);
+//    Logger.log('id ' + id + '  name ' + name + '  row ' + row);
     
   }
+}
+
+function publishNewEvent(pubRowNum) {
+  var data = sheet.getRange(pubRowNum, 5).getValues();
+  var id = data[0];
+  var startDate = data[1];
+  var topic = data[3];
+  var details = data[4];
+  var rowNum = pubRowNum;
+  var eventToPub = {
+      "id": id,
+      "startDate": startDate,
+      "topic": topic,
+      "details": details,
+      "rowNum": rowNum
+    };
+  var event = createEventOnCalendar(eventToPub);
+  var id = event.getId();
+  var idCell = sheet.getRange('A' + pubRowNum);
+  idCell.setValue(id);
+  var status = sheet.getRange('C' + pubRowNum);
+  status.setValue('Published'); 
 }
 
 function getEventsFromSheet() {
@@ -175,6 +198,7 @@ function deleteEvent(delRowNum) {
   var event = cal.getEventSeriesById(deleteId);
   event.deleteEventSeries();
   sheet.deleteRow(delRowNum);
+  filterSheet.deleteRow(delRowNum);
 }
 
 
