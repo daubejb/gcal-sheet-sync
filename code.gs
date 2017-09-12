@@ -174,7 +174,7 @@ function deleteEvent(delRowNum) {
   var cal = getCalendar();
   var event = cal.getEventSeriesById(deleteId);
   event.deleteEventSeries();
-  
+  sheet.deleteRow(delRowNum);
 }
 
 
