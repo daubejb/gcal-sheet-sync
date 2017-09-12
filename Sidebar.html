@@ -48,12 +48,16 @@
       <input type="button" class="blue" onclick='refreshEvents()' value="Retrieve">
       <br>
       <hr>
-      <h4>Delete an event</hr>
+      <h4>Delete an event</h4>
+      <div class="inline form-group">
+        <span><label unselectable="on">Enter a row number  </label><input type="number" id="deleteNumber" /></span><br>
+        <input type="button" class="red" onclick='deleteEvent(deleteNumber.value)' value="Delete" />
+      </div>
       
     </div>
     
     <div class="sidebar bottom">
-      <span>Communications Calendar by <span color="#0f9d58 !important">daube</span>design</span>
+      <span class="grey">Communications Calendar by daubedesign</span>
     </div>
     
     <script>
@@ -99,13 +103,16 @@
           google.script.run.displayToast(err);
         }
       }
+      
+      function deleteEvent(deleteNumber) {
+        try {
+          google.script.run.deleteEvent(deleteNumber);
+          } catch (err) {
+            google.script.run.displayToast("To delete an event, enter a row number");
+          }
+        }
     </script>
     
   </body>
 
 </html>
-
-
-
-
-
