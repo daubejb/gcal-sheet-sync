@@ -106,8 +106,37 @@ function putNewEventsOnSheet(eF) {
 
 /**** PUBLISH SHEETS EVENTS TO GOOGLE CALENDAR ****/
 
+function publishNewEvent(pubRowNum) {
+  var a1 = 'A' + pubRowNum + ':' + 'E' + pubRowNum;
+  var data = sheet.getRange(a1).getValues();
+  Logger.log(data);
+  var eventsToPublish = [];
+  var eventToPub = {}
+    var id = data[0][0];
+    var startDate = data[0][1];
+    var topic = data[0][3];
+    var details = data[0][4];
+    var rowNum = pubRowNum;
+    eventToPub = {
+      "id": id,
+      "startDate": startDate,
+      "topic": topic,
+      "details": details,
+      "rowNum": rowNum
+    };
+    eventsToPublish.push(eventToPub);
+    var event = createEventOnCalendar(eventsToPublish[0]);
+    var id = event.getId();
+    var row = eventsToPublish[0].rowNum;
+    var idCell = sheet.getRange('A' + row);
+    idCell.setValue(id);
+    var status = sheet.getRange('C' + row);
+    status.setValue('Published');
+}
+
 function publishNewEvents() {
   var data = getEventsFromSheet();
+  Logger.log(data);
   var eventsToPublish = filterNonPublishedEvents(data);
   for (i=0; i<eventsToPublish.length; i++) {
     var event = createEventOnCalendar(eventsToPublish[i]);
@@ -119,31 +148,10 @@ function publishNewEvents() {
     var status = sheet.getRange('C' + row);
     status.setValue('Published');
     
+    
 //    Logger.log('id ' + id + '  name ' + name + '  row ' + row);
     
   }
-}
-
-function publishNewEvent(pubRowNum) {
-  var data = sheet.getRange(pubRowNum, 5).getValues();
-  var id = data[0];
-  var startDate = data[1];
-  var topic = data[3];
-  var details = data[4];
-  var rowNum = pubRowNum;
-  var eventToPub = {
-      "id": id,
-      "startDate": startDate,
-      "topic": topic,
-      "details": details,
-      "rowNum": rowNum
-    };
-  var event = createEventOnCalendar(eventToPub);
-  var id = event.getId();
-  var idCell = sheet.getRange('A' + pubRowNum);
-  idCell.setValue(id);
-  var status = sheet.getRange('C' + pubRowNum);
-  status.setValue('Published'); 
 }
 
 function getEventsFromSheet() {
