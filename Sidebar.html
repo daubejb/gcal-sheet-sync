@@ -107,6 +107,7 @@
       function deleteEvent(deleteNumber) {
         try {
           google.script.run.deleteEvent(deleteNumber);
+          document.getElementById('deleteNumber').value = "";
           } catch (err) {
             google.script.run.displayToast("To delete an event, enter a row number");
           }
