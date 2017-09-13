@@ -226,6 +226,32 @@ function deleteEvent(delRowNum) {
 }
 
 
+/**** GENERAL SHEET EDIT DETECTION ****/
+
+function onEdit(e){
+  var range = e.range;
+  var editColumn = range.getColumn();
+  var editSheet = range.getSheet();
+  var editSheetName = editSheet.getName();
+  var anImportantChange = anImportantFieldChanged(editColumn, editSheetName);
+  if (anImportantChange) {
+    var editRow = range.getRow();
+    var updateStatusCell = sheet.getRange('C' + editRow);
+    updateStatusCell.setValue('Update calendar');
+  }
+}
+
+function anImportantFieldChanged(col, editSheetName) {
+  if ((col == '2.0' || c == '4.0' || col == '5.0') && (editSheetName == 'Events')) {
+    return true;  
+  } else {
+    return false;  
+  }
+}
+  
+
+
+
 /**********************/
 /** Helper Functions **/
 
