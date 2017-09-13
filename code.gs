@@ -1,10 +1,10 @@
-/*************************GLOBAL STUFF*********************************/
+/************************ GLOBAL STUFF ********************************/
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 var sheet = ss.getSheetByName('Events');
 var daubeCommCal = getCalendar();
 var filterSheet = ss.getSheetByName('Filter');
 
-/*************************SETUP STUFF**********************************/
+/************************ SETUP STUFF *********************************/
 function onOpen(e) {
   SpreadsheetApp.getUi().createAddonMenu()
       .addItem('Start', 'showSidebar')
@@ -21,26 +21,7 @@ function onInstall(e) {
   onOpen(e);
 }
 
-function showAlert(type, prompt, message) {
-
-  var ui = SpreadsheetApp.getUi(); // Same variations.
-  if (type == 'delete') {
-    var result = ui.alert(
-      prompt,
-      message,
-      ui.ButtonSet.YES_NO);
-    // Process the user's response.
-    if (result == ui.Button.YES) {
-      var userResponse = "yes";
-    } else {
-      var userResponse = "no";
-    }
-    return userResponse;
-  }
-}
-/**
- * Opens a sidebar in the document containing the add-on's user interface.
- */
+/***Opens a sidebar in the document containing the add-on's user interface.**/
 function showSidebar() {
   var ui = HtmlService.createTemplateFromFile('Sidebar').evaluate()
       .setSandboxMode(HtmlService.SandboxMode.IFRAME)
@@ -49,7 +30,6 @@ function showSidebar() {
 }
 
 /*******************GET CALENDAR EVENTS FROM GOOGLE********************/
-
 //gets calendar events for the next year and inserts new ones in the sheet
 function refreshEvents() {
   var events = getEventsFromGoogle();
@@ -126,7 +106,7 @@ function putNewEventsOnSheet(eF) {
   }
 }
 
-/**** PUBLISH SHEETS EVENTS TO GOOGLE CALENDAR ****/
+/************PUBLISH NEW SHEET EVENTS TO GOOGLE CALENDAR***************/
 
 function publishNewEvent(pubRowNum) {
   var a1 = 'A' + pubRowNum + ':' + 'E' + pubRowNum;
@@ -213,21 +193,33 @@ function createEventOnCalendar(ev) {
   return event;                                                                                                                     
 }
 
-/**** DELETE EVENT FROM CALENDAR AND SHEET ****/
+/**************** UPDATE CHANGED SHEET EVENTS TO CALENDAR **********/
+function updateCalendarEvents() {
+  return;
+}
 
+function updateCalendarEvent(upRowNum) {
+  var eventData = sheet.getRange(upRowNum, 1, 1, 5).getValues();
+  var eventToUpdate = daubeCommCal.getEventSeriesById(eventData[0][0]);
+  var sDate = new Date(eventData[0][1]);
+  eventToUpdate.setTitle(eventData[0][3]);
+  eventToUpdate.setDescription(eventData[0][4]);
+  var recurrence = CalendarApp.newRecurrence().addDailyRule().times(1);
+  eventToUpdate.setRecurrence(recurrence, sDate);
+}
+
+/**************** DELETE EVENT FROM CALENDAR AND SHEET *************/
 function deleteEvent(delRowNum) {
   var deleteId = sheet.getRange(delRowNum, 1).getValue();
   Logger.log('row number: ' + delRowNum + 'id: ' + deleteId);
   var cal = getCalendar();
   var event = cal.getEventSeriesById(deleteId);
   event.deleteEventSeries();
-  sheet.deleteRow(delRowNum);
+  sheet.deleteRow(delRowNum);  
   filterSheet.deleteRow(delRowNum);
 }
 
-
 /**** GENERAL SHEET EDIT DETECTION ****/
-
 function onEdit(e){
   var range = e.range;
   var editColumn = range.getColumn();
@@ -241,20 +233,10 @@ function onEdit(e){
   }
 }
 
-function anImportantFieldChanged(col, editSheetName) {
-  if ((col == '2.0' || c == '4.0' || col == '5.0') && (editSheetName == 'Events')) {
-    return true;  
-  } else {
-    return false;  
-  }
-}
+
   
 
-
-
-/**********************/
-/** Helper Functions **/
-
+/**************************HELPER FUNCTIONS ********************************/
 function getCalendar() {
   return CalendarApp.getCalendarById(
     'redhat.com_rcl08qun4gu0gdj9ac1mr1pni4@group.calendar.google.com');
@@ -262,4 +244,30 @@ function getCalendar() {
 
 function displayToast(m) {
   ss.toast("An error occured:" + m);
+}
+
+function showAlert(type, prompt, message) {
+
+  var ui = SpreadsheetApp.getUi(); // Same variations.
+  if (type == 'delete') {
+    var result = ui.alert(
+      prompt,
+      message,
+      ui.ButtonSet.YES_NO);
+    // Process the user's response.
+    if (result == ui.Button.YES) {
+      var userResponse = "yes";
+    } else {
+      var userResponse = "no";
+    }
+    return userResponse;
+  }
+}
+
+function anImportantFieldChanged(col, editSheetName) {
+  if ((col == '2.0' || col == '4.0' || col == '5.0') && (editSheetName == 'Events')) {
+    return true;  
+  } else {
+    return false;  
+  }
 }
