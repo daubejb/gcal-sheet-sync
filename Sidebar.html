@@ -12,8 +12,8 @@
       }
       
       hr {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
       }
       
       #publishNumber,
@@ -27,8 +27,7 @@
   <body>
     <div class="sidebar branding-below">
     
-      <h4>Calendar name</h4>
-      <p>Daube Communications</p>
+      <span><h4>Calendar name: </h4><p>Daube Communications</p></span>
       <hr>
       <h4>Calendar view options</h4>
       <div class="inline form-group">
@@ -137,6 +136,7 @@
           } else {
             if (publishNumber == "") { throw "To publish an event, enter a row number"; }
             google.script.run.publishNewEvent(publishNumber);
+            document.getElementById('publishNumber').value = "";
           }
         } catch (err) {
           google.script.run.displayToast(err);
