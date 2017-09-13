@@ -15,14 +15,28 @@
         margin-top: 0.75rem;
         margin-bottom: 0.75rem;
       }
+      div {
+        margin-bottom: 0;
+        margin-top: 0;
+      }
       
       #publishNumber,
-      #deleteNumber {
+      #deleteNumber,
+      #updateNumber {
         width: 75px;
       }
       
       #deleteButton {
-        margin-left: 5px;
+        margin-left: 10px;
+      }
+      
+      .title {
+        font-size: 13px;
+      }
+      
+      h4 {
+        margin-top: 14px;
+        margin-bottom: 14px;
       }
     
     </style>
@@ -31,7 +45,7 @@
   <body>
     <div class="sidebar branding-below">
     
-      <span><h4>Calendar name: </h4><p>Daube Communications</p></span>
+      <p class="title"><strong>Calendar:&nbsp</strong>  Daube Communications</p>
       <hr>
       <h4>Calendar view options</h4>
       <div class="inline form-group">
@@ -39,7 +53,7 @@
         <label unselectable="on"><input type="radio" id="radioToday" name="calendarViewType" value="Today" />Today<br></label>
         <label unselectable="on"><input type="radio" id="radioMonth" name="calendarViewType" value="Month" checked />This Month<br></label>
         <label unselectable="on"><input type="radio" id="radioWeek" name="calendarViewType" value="This week" />This week<br></label>
-        <label unselectable="on"><input type="radio" id="radioSpecific" name="calendarViewType" value="Specific week" /><span>Specific week:  </span><input type="date" id="date" /></label>
+        <label unselectable="on"><input type="radio" id="radioSpecific" name="calendarViewType" value="Specific week" /><span>Specific week:&nbsp&nbsp</span><input type="date" id="date" /></label>
         <br>
         <br>
         <input type="button" class="blue" onclick='openCalendar(radioToday.checked, radioMonth.checked, radioWeek.checked, radioSpecific.checked, date.value)' value="Open calendar" />
@@ -66,7 +80,7 @@
                        name="publishType"
                        onclick="document.getElementById('publishNumber').disabled = false;
                                 document.getElementById('publishNumber').focus();"
-                       value="Specific row" />Specific row:   <input type="number" id="publishNumber" disabled/></label></span>
+                       value="Specific row" />Specific row:&nbsp&nbsp<input type="number" id="publishNumber" disabled/></label></span>
         <br>
         <br>
         <input type="button" class="blue" onclick='publishNewEvents(radioAll.checked, radioRow.checked, publishNumber.value)' value="Publish" />
@@ -75,13 +89,40 @@
       </div>
       
       <hr>
+      <div class="inline form-group">
+        
+        <h4>Update calendar</h4>
+        <label unselectable="on">
+          <input type="radio" 
+            id="radioAllUp" 
+            name="updateType"
+            onclick="document.getElementById('updateNumber').disabled = true;"
+            value="All updated events" 
+            checked />All updated events<br>
+        </label>
+        <span><label unselectable="on">
+                <input type="radio"
+                       id="radioRowUp"
+                       name="updateType"
+                       onclick="document.getElementById('updateNumber').disabled = false;
+                                document.getElementById('updateNumber').focus();"
+                       value="Specific row" />Specific row:&nbsp&nbsp<input type="number" id="updateNumber" disabled/></label></span>
+        <br>
+        <br>
+        <input type="button" class="blue" onclick='updateCalendar(radioAllUp.checked, radioRowUp.checked, updateNumber.value)' value="Update" />
+        <br>
+      
+      </div>
+      
+      <hr>
+
       <h4>Retrieve new events from calendar</h4>
       <input type="button" class="blue" onclick='refreshEvents()' value="Retrieve">
       <br>
       <hr>
       <h4>Delete an event</h4>
       <div class="inline form-group">
-        <span><label unselectable="on">Specific row:   <input type="number" id="deleteNumber" /><input type="button" id="deleteButton" class="red" onclick='deleteEvent(deleteNumber.value)' value="Delete" /></label></span>
+        <span><label unselectable="on">Specific row:&nbsp&nbsp<input type="number" id="deleteNumber" /><input type="button" id="deleteButton" class="red" onclick='deleteEvent(deleteNumber.value)' value="Delete" /></label></span>
       </div>
       
     </div>
@@ -107,8 +148,8 @@
           }
           if (radioSpecific) {
             if (dateValue == "") { throw "To view a specific week, enter a date"; }
-            var today = getFormattedDate(dateValue);
-            window.open("https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com&mode=week&dates=" + today + "%2F" + today);
+            var anotherDate = getFormattedDate(dateValue);
+            window.open("https://www.google.com/calendar/embed?src=redhat.com_rcl08qun4gu0gdj9ac1mr1pni4%40group.calendar.google.com&mode=week&dates=" + anotherDate + "%2F" + anotherDate);
           }
         } catch (err) {
               google.script.run.displayToast(err);
@@ -139,6 +180,20 @@
             if (publishNumber == "") { throw "To publish an event, enter a row number"; }
             google.script.run.publishNewEvent(publishNumber);
             document.getElementById('publishNumber').value = "";
+          }
+        } catch (err) {
+          google.script.run.displayToast(err);
+        }
+      }
+      
+      function updateCalendar(radioAll, radioRow, updateNumber) {
+        try {
+          if (radioAll) {
+            google.script.run.updateCalendarEvents();  
+          } else {
+            if (updateNumber == "") { throw "To update an event, enter a row number"; }
+            google.script.run.updateCalendarEvent(updateNumber);
+            document.getElementById('updateNumber').value = "";
           }
         } catch (err) {
           google.script.run.displayToast(err);
