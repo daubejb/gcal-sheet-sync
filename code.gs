@@ -10,12 +10,34 @@ function onOpen(e) {
       .addItem('Start', 'showSidebar')
       .addToUi();
       showSidebar();
+  
+  SpreadsheetApp.getUi()
+      .createMenu('Custom Menu')
+      .addItem('Show alert', 'showAlert')
+      .addToUi();
 }
 
 function onInstall(e) {
   onOpen(e);
 }
 
+function showAlert(type, prompt, message) {
+
+  var ui = SpreadsheetApp.getUi(); // Same variations.
+  if (type == 'delete') {
+    var result = ui.alert(
+      prompt,
+      message,
+      ui.ButtonSet.YES_NO);
+    // Process the user's response.
+    if (result == ui.Button.YES) {
+      var userResponse = "yes";
+    } else {
+      var userResponse = "no";
+    }
+    return userResponse;
+  }
+}
 /**
  * Opens a sidebar in the document containing the add-on's user interface.
  */
@@ -141,16 +163,11 @@ function publishNewEvents() {
   for (i=0; i<eventsToPublish.length; i++) {
     var event = createEventOnCalendar(eventsToPublish[i]);
     var id = event.getId();
-//    var name = event.getTitle();
     var row = eventsToPublish[i].rowNum;
     var idCell = sheet.getRange('A' + row);
     idCell.setValue(id);
     var status = sheet.getRange('C' + row);
-    status.setValue('Published');
-    
-    
-//    Logger.log('id ' + id + '  name ' + name + '  row ' + row);
-    
+    status.setValue('Published');    
   }
 }
 
@@ -188,9 +205,8 @@ function filterNonPublishedEvents(data) {
 }
   
 function createEventOnCalendar(ev) {
-  var event = getCalendar().createEvent(
+  var event = getCalendar().createAllDayEvent(
     ev.topic,
-    new Date(ev.startDate),
     new Date(ev.startDate),
     {description: ev.details}
   );   
