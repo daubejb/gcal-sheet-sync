@@ -18,7 +18,11 @@
       
       #publishNumber,
       #deleteNumber {
-        width: 100px;
+        width: 75px;
+      }
+      
+      #deleteButton {
+        margin-left: 5px;
       }
     
     </style>
@@ -77,9 +81,7 @@
       <hr>
       <h4>Delete an event</h4>
       <div class="inline form-group">
-        <span><label unselectable="on">Specific row:   <input type="number" id="deleteNumber" /></label></span><br>
-        <br>
-        <input type="button" class="red" onclick='deleteEvent(deleteNumber.value)' value="Delete" />
+        <span><label unselectable="on">Specific row:   <input type="number" id="deleteNumber" /><input type="button" id="deleteButton" class="red" onclick='deleteEvent(deleteNumber.value)' value="Delete" /></label></span>
       </div>
       
     </div>
@@ -146,12 +148,22 @@
       function deleteEvent(deleteNumber) {
         try {
           if (deleteNumber == "") {throw "To delete an event, enter a row number";}
-          google.script.run.deleteEvent(deleteNumber);
-          document.getElementById('deleteNumber').value = "";
-          } catch (err) {
+          
+          google.script.run.withSuccessHandler(onSuccess)
+            .showAlert('delete','Delete calendar event?',
+                       'This action will delete both the Sheet\'s row and the calendar event');
+          function onSuccess(userResponse) {  
+            if (userResponse == "yes") {
+              google.script.run.deleteEvent(deleteNumber);
+              document.getElementById('deleteNumber').value = "";
+            } else {
+              return;
+            }
+          }
+        } catch (err) {
             google.script.run.displayToast(err);
           }
-        }
+      }
     </script>
     
   </body>
